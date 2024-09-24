@@ -3,7 +3,7 @@ import pygame, math
 # 1. 게임 초기화
 pygame.init()
 # 2. 게임창 옵션 설정
-size = [500,900]
+size = [500,750]
 screen = pygame.display.set_mode(size)
 title = "HANGMAN"
 pygame.display.set_caption(title)
@@ -39,7 +39,8 @@ while not exit:
                     entry_text = key_name.upper()
                 else : entry_text = ""
             else : entry_text = ""
-            print(key_name)
+            if (key_name == "return" or key_name == "enter") and entry_text != "":
+                enter_go = True
 
     # 4-3. 입력, 시간에 따른 변화
     k += 1
