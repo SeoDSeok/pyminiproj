@@ -19,13 +19,63 @@ def tup_r(tup):
     return tuple(temp_list)
 bg_img = pygame.image.load("./gameproject2/bg.png")
 bg_img = pygame.transform.smoothscale(bg_img, size)
-mole_img = pygame.image.load("./gameproject2/mole_1.png")
-mole_size = mole_img.get_size()
+mole_img1 = pygame.image.load("./gameproject2/mole_1.png")
+mole_img2 = pygame.image.load("./gameproject2/mole_2.png")
+mole_size = mole_img1.get_size()
 mole_size = tup_r((mole_size[0]*0.25, mole_size[1]*0.25))
-mole_img = pygame.transform.smoothscale(mole_img, mole_size)
-mole_crop = 0
-mole_move = 5
-mole_stage = 0
+mole_img1 = pygame.transform.smoothscale(mole_img1, mole_size)
+mole_img2 = pygame.transform.smoothscale(mole_img2, mole_size)
+hammer_img = pygame.image.load("./gameproject2/hammer.png")
+hammer_size = hammer_img.get_size()
+hammer_size = tup_r((hammer_size[0]*0.15, hammer_size[1]*0.15))
+hammer_img = pygame.transform.smoothscale(hammer_img, hammer_size)                    
+# 두더지 class
+class mole:
+    def __init__(self, i, j):
+        self.i = i
+        self.j = j
+        self.img = mole_img1
+        self.crop = 0
+        self.move = 10
+        self.stage = 0
+        self.staytime = 200
+        self.clicked = False
+        self.size = mole_size
+    
+    def crop_change(self):
+        if self.stage == 0:
+            if random.random() < 0.1 : self.stage = 1
+        elif self.stage == 1:
+            self.crop += self.move
+            if self.crop >= self.size[1] : 
+                self.crop = self.size[1]
+                self.stage = 2
+                self.stay_start = now_time
+        elif self.stage == 2:
+            if now_time - self.stay_start >= self.staytime :
+                self.stage = 3
+        elif self.stage == 3:
+            self.crop -= self.move
+            if self.crop <= 0 : 
+                self.crop = 0
+                self.stage = 0
+                self.img = mole_img1
+                self.clicked = False
+        self.img_cropped = self.img.subsurface((0,0,self.size[0],self.crop))
+        self.pos = tup_r((x_list[self.i]-self.size[0]/2, y_list[self.j]-self.crop))
+        self.range = (self.pos[0], self.pos[1], self.size[0], self.crop)
+    
+   
+    def show(self):
+        screen.blit(self.img_cropped, self.pos)
+
+mole_list = []
+for i in range(3):
+    for j in range(3):
+        aa = mole(i, j)
+        mole_list.append(aa)        
+  
+click_go = False
 exit = False
 # 4. 메인 이벤트
 while not exit:
@@ -36,20 +86,29 @@ while not exit:
         if event.type == pygame.QUIT:
             exit = True
         if event.type == pygame.MOUSEBUTTONDOWN:
-            print(pygame.mouse.get_pos())
+            click_go = True
     # 4-3. 입력, 시간에 따른 변화
-    if mole_stage == 0:
-        if random.random() < 0.5 : mole_stage = 1
-    elif mole_stage == 1:
-        mole_crop += mole_move
-        if mole_crop >= mole_size[1] : 
-            mole_crop = mole_size[1]
-            mole_stage = 2
-    mole_img_cropped = mole_img.subsurface((0,0,mole_size[0],mole_crop))
-    mole_pos = tup_r((x_list[0]-mole_size[0]/2, y_list[0]-mole_crop))
+    now_time = pygame.time.get_ticks()
+    for mole in mole_list:
+        mole.crop_change()
+    
+    if click_go == True :
+        for mole in mole_list:
+            if mole.clicked == False:
+                x, y = pygame.mouse.get_pos()
+                x1, y1, w, h = mole.range
+                if x >= x1 and x <= x1+w and y >= y1 and y <= y1+h:
+                    mole.clicked = True
+                    mole.stage = 3
+                    mole.img = mole_img2
+        click_go = False        
+    x, y = pygame.mouse.get_pos()
+    hammer_pos = (x, y-hammer_size[1])
     # 4-4. 그리기
     screen.blit(bg_img, (0,0))
-    screen.blit(mole_img_cropped, mole_pos)
+    for mole in mole_list:
+        mole.show()
+    screen.blit(hammer_img, hammer_pos)    
     # 4-5. 업데이트
     pygame.display.flip()
 # 5. 게임 종료
