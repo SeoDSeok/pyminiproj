@@ -17,6 +17,16 @@ no_font = pygame.font.Font("C:/Windows/Fonts/arial.ttf", 40)
 title_font = pygame.font.Font("C:/Windows/Fonts/arial.ttf", 80)
 guide_font = pygame.font.Font("C:/Windows/Fonts/arial.ttf", 20)
 finish_font = pygame.font.Font("C:/Windows/Fonts/arial.ttf", 30)
+sound_bad = pygame.mixer.Sound("./gameproject/bad.ogg")
+sound_good = pygame.mixer.Sound("./gameproject/good.ogg")
+sound_clock = pygame.mixer.Sound("./gameproject/clock.ogg")
+sound_save = pygame.mixer.Sound("./gameproject/save.ogg")
+sound_fail = pygame.mixer.Sound("./gameproject/fail.ogg")
+sound_bad.set_volume(0.2)
+sound_good.set_volume(0.2)
+sound_clock.set_volume(0.2)
+sound_save.set_volume(0.2)
+sound_fail.set_volume(0.2)
 def tup_r(tup):
     temp_list = []
     for a in tup:
@@ -43,7 +53,7 @@ while not exit:
         word = data_list[r_index].replace(u"\xa0", u" ").split(" ")[1]
         if len(word) <= 6 :break
     word = word.upper()
-
+    
     #  단어의 글자 수만큼 밑줄을 긋는다.
     word_show = "_"*len(word)
     try_num = 0
@@ -52,6 +62,8 @@ while not exit:
 
     k = 0
     # 시작 화면
+    sound_save.stop()
+    sound_fail.stop()
     while not exit:
         clock.tick(60)
         for event in pygame.event.get():
@@ -73,6 +85,7 @@ while not exit:
         pygame.display.flip()
         
     # 4. 메인 이벤트
+    sound_clock.play(-1)
     while not exit:
         # 4-1. FPS 설정
         clock.tick(60)
@@ -81,6 +94,8 @@ while not exit:
             if event.type == pygame.QUIT:
                 exit = True
             if event.type == pygame.KEYDOWN:
+                if drop == False and try_num == 8: # 빨간줄이 길어지는 동안
+                    continue
                 if game_over == True: play_again = True
                 key_name = pygame.key.name(event.key)
                 if (key_name == "return" or key_name == "enter"):
@@ -101,19 +116,25 @@ while not exit:
             if result == -1 : #없음
                 try_num += 1
                 no_list.append(ans)
+                sound_bad.play()
             else : #있음
                 ok_list.append(ans)
                 for i in range(len(word)):
                     if word[i] == ans:
                         word_show = word_show[:i] + ans + word_show[i+1:]
+                sound_good.play()
             enter_go = False
             entry_text = ""
         if drop == True: # 실패로 종료
             game_over = True
             word_show = word
+            sound_clock.stop()
+            
         if word_show.find("_") == -1 and game_over == False : # 성공으로 종료
             game_over = True
             save = True
+            sound_clock.stop()
+            sound_save.play()
         # 4-4. 그리기
         screen.fill(black)
         A = tup_r((0, size[1]*2/3))
@@ -162,6 +183,7 @@ while not exit:
                 P = tup_r((size[0]/2+size[0]/6, O[1]))
                 drop = True
                 k = 0
+                sound_fail.play()
             pygame.draw.line(screen, red, O, P, 3)
         # 힌트 표시하기
         hint = hint_font.render(word_show, True, white)
