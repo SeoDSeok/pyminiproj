@@ -9,7 +9,7 @@ from openpyxl.utils import get_column_letter
 class WeeklyWorkPlan:
     wb = None
     ws = None
-    start_date = '2022-09-01'
+    start_date = '2024-10-01'
     manager = "매니저 이름을 입력 해주세요"
     date_list = []
     days_of_week = []
@@ -137,5 +137,5 @@ class WeeklyWorkPlan:
                 cell.border = border_style
 
 if __name__ == '__main__':
-    wwp = WeeklyWorkPlan('2022-09-05', '김패캠', days=5)
+    wwp = WeeklyWorkPlan('2024-10-01', '김**', days=5)
     wwp.save('주간업무계획표.xlsx')
